@@ -158,6 +158,10 @@ impl LocalMessage {
                 info!("[Network] Set disconnect and response");
                 self.snapshot_req(&self.data, service);
             }
+            routing_key!(Executor >> GetCrlResp) => {
+                info!("[Network] Get Crl response");
+                //self.snapshot_req(&self.data, service);
+            }
             _ => {
                 error!("[Network] Unexpected key {} from Local", self.key);
             }

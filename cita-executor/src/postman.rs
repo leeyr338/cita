@@ -181,6 +181,11 @@ impl Postman {
                 self.reply_chain_request(req);
             }
 
+            routing_key!(Net >> GetCrl) => {
+                let req = msg.take_request().unwrap();
+                self.reply_network_crl(req);
+            }
+
             routing_key!(Chain >> RichStatus) => {
                 if let Some(status) = msg.take_rich_status() {
                     self.update_by_rich_status(&status);
@@ -472,6 +477,40 @@ impl Postman {
         let msg: Message = miscellaneous.into();
         self.response_mq(
             routing_key!(Executor >> Miscellaneous).into(),
+            msg.try_into().unwrap(),
+        );
+    }
+
+    fn reply_network_crl(&self, mut req: request::Request) {
+        let mut response = response::Response::new();
+        response.set_request_id(req.take_request_id());
+        if let Request::call(call) = req.req.unwrap() {
+            info!("Network get Cerificate Revoke List: {:?}", call);
+            let _ = serde_json::from_str::<BlockNumber>(&call.height)
+                    .map(|block_id| {
+                        let call_request = CallRequest::from(call);
+                        command::eth_call(
+                            &self.command_req_sender,
+                            &self.command_resp_receiver,
+                            call_request,
+                            block_id.into(),
+                        )
+                        .map(|ok| {
+                            response.set_call_result(ok);
+                        })
+                        .map_err(|err| {
+                            response.set_code(ErrorCode::query_error());
+                            response.set_error_msg(err);
+                        })
+                    })
+                    .map_err(|err| {
+                        response.set_code(ErrorCode::query_error());
+                        response.set_error_msg(format!("{:?}", err));
+                    });
+        }
+        let msg: Message = response.into();
+        self.response_mq(
+            routing_key!(Executor >> GetCrlResp).into(),
             msg.try_into().unwrap(),
         );
     }

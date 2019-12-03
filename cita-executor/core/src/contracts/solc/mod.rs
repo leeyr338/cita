@@ -24,6 +24,7 @@ pub mod quota_manager;
 pub mod sys_config;
 pub mod user_management;
 pub mod version_management;
+pub mod cert_revoke_manager;
 
 pub use self::chain_manager::ChainManagement;
 pub use self::emergency_intervention::EmergencyIntervention;
@@ -34,7 +35,7 @@ pub use self::quota_manager::{AccountQuotaLimit, QuotaManager, AUTO_EXEC_QL_VALU
 pub use self::sys_config::SysConfig;
 pub use self::user_management::UserManagement;
 pub use self::version_management::VersionManager;
-
+pub use self::cert_revoke_manager::CertRevokeManager;
 use crate::libexecutor::call_request::CallRequest;
 use crate::libexecutor::command::Commander;
 use crate::libexecutor::executor::Executor;

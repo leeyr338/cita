@@ -15,7 +15,7 @@
 use super::executor::Executor;
 use crate::contracts::solc::{
     AccountQuotaLimit, EmergencyIntervention, NodeManager, PermissionManagement, PriceManagement,
-    QuotaManager, Resource, SysConfig, UserManagement, VersionManager, AUTO_EXEC_QL_VALUE,
+    QuotaManager, Resource, SysConfig, UserManagement, VersionManager, AUTO_EXEC_QL_VALUE, CertRevokeManager,
 };
 use crate::libexecutor::economical_model::EconomicalModel;
 use crate::types::block_number::BlockTag;
@@ -145,6 +145,11 @@ impl GlobalSysConfig {
             .quota_price(block_tag)
             .unwrap_or_else(PriceManagement::default_quota_price);
 
+        let cert_revoke_manager = CertRevokeManager::new(executor);
+        let crl = cert_revoke_manager.get_crl(block_tag);
+
+        info!("Current Crl is : {:?}", crl);
+        
         conf
     }
 }
